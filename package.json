@@ -1,0 +1,71 @@
+{
+  "name": "@longears-mobile/rcs-sdk",
+  "version": "0.1.0",
+  "description": "Provider-agnostic SDK for RCS (Rich Communication Services) messaging",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "unpkg": "dist/index.umd.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "docs": "typedoc --out docs/api src/index.ts"
+  },
+  "keywords": [
+    "rcs",
+    "messaging",
+    "sms",
+    "rich-communication-services",
+    "longears"
+  ],
+  "author": "GIP Ventures",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gip-ventures/rcs-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gip-ventures/rcs-sdk/issues"
+  },
+  "homepage": "https://www.longears.mobi/",
+  "dependencies": {
+    "axios": "^1.9.0",
+    "pino": "^9.7.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^24.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/parser": "^8.34.0",
+    "eslint": "^9.28.0",
+    "jest": "^30.0.0",
+    "rollup": "^2.79.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "ts-jest": "^29.4.0",
+    "tslib": "^2.8.1",
+    "typedoc": "^0.28.5",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
