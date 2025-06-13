@@ -142,41 +142,46 @@ describe('LongearsRCSProvider', () => {
   });
 
 
-  it('should validate phone number successfully', async () => {
+  it('should check RCS capabilities successfully', async () => {
     const provider = new LongearsRCSProvider(mockAuth as any, defaultConfig);
     (provider as any).initialized = true;
     
-    const validationResponse = {
-      valid: true,
-      formatted: '+12345678901',
-      countryCode: 'US',
-      carrier: 'Test Carrier',
-      capabilities: {
+    const capabilitiesResponse = {
+      phoneNumber: '+12345678901',
+      isRcsSupported: true,
+      features: {
         richCards: true,
         carousels: true,
         suggestions: true,
         fileTransfer: true,
-        supportedMediaTypes: ['image/jpeg', 'image/png'],
+        supportedMediaTypes: ['image/jpeg', 'image/png', 'compose'],
         maxMessageLength: 1000,
         maxSuggestions: 4,
         maxFileSize: 1048576
-      }
+      },
+      countryCode: 'US',
+      carrier: 'Test Carrier'
     };
     
-    // Mock successful validation request
-    (provider as any).makeRequest = jest.fn().mockResolvedValue(validationResponse);
+    // Mock successful capabilities request
+    (provider as any).makeRequest = jest.fn().mockResolvedValue(capabilitiesResponse);
     
     const validation = await provider.validatePhoneNumber('+12345678901');
     
-    expect(validation.valid).toBe(true);
-    expect(validation.formatted).toBe('+12345678901');
-    expect(validation.countryCode).toBe('US');
-    expect(validation.carrier).toBe('Test Carrier');
-    expect(validation.capabilities).toBeDefined();
-    expect(validation.capabilities?.supportsRichCards).toBe(true);
+    expect(validation.success).toBe(true);
+    expect(validation.capability).toBeDefined();
+    expect(validation.capability?.phoneNumber).toBe('+12345678901');
+    expect(validation.capability?.isCapable).toBe(true);
+    expect(validation.capability?.features).toContain('RICHCARD_STANDALONE');
+    expect(validation.capability?.features).toContain('RICHCARD_CAROUSEL');
+    expect(validation.capability?.features).toContain('ACTION_DIAL');
+    expect(validation.capability?.features).toContain('ACTION_OPEN_URL');
+    expect(validation.capability?.features).toContain('ACTION_SHARE_LOCATION');
+    expect(validation.capability?.features).toContain('ACTION_COMPOSE');
+    expect(validation.capability?.timestamp).toBeDefined();
     
     expect((provider as any).makeRequest).toHaveBeenCalledWith(
-      `${defaultConfig.apiEndpoint}/validate?phoneNumber=%2B12345678901`,
+      `${defaultConfig.apiEndpoint}/capabilities?phoneNumber=%2B12345678901`,
       { method: 'GET' }
     );
   });

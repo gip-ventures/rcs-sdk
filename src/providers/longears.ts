@@ -35,13 +35,6 @@ interface LongearsCapabilitiesResponse {
   countryCode?: string;
 }
 
-interface LongearsValidationResponse {
-  valid: boolean;
-  formatted: string;
-  countryCode?: string;
-  carrier?: string;
-  capabilities?: LongearsCapabilitiesResponse['features'];
-}
 
 export class LongearsRCSProvider extends BaseProvider {
   name = 'longears';
@@ -176,43 +169,53 @@ export class LongearsRCSProvider extends BaseProvider {
       // Try to format the number first
       const formattedNumber = formatPhoneNumber(phoneNumber) || phoneNumber;
       
-      // Validate the number
-      const response = await this.makeRequest<LongearsValidationResponse>(
-        `${this.apiEndpoint}/validate?phoneNumber=${encodeURIComponent(formattedNumber)}`,
+      // Get capabilities for this phone number
+      const response = await this.makeRequest<LongearsCapabilitiesResponse>(
+        `${this.apiEndpoint}/capabilities?phoneNumber=${encodeURIComponent(formattedNumber)}`,
         {
           method: 'GET'
         }
       );
       
-      logger.debug('Phone number validation result from Longears RCS', { 
+      logger.debug('Phone number capability result from Longears RCS', { 
         phoneNumber, 
-        valid: response.valid,
-        formatted: response.formatted 
+        isRcsSupported: response.isRcsSupported
       });
       
-      // Transform and return the response
-      const result: ValidationResult = {
-        valid: response.valid,
-        formatted: response.formatted,
-        countryCode: response.countryCode,
-        carrier: response.carrier
-      };
+      // Transform response to match the expected format
+      const features = [];
       
-      // Add capabilities if available
-      if (response.capabilities) {
-        result.capabilities = {
-          supportsRichCards: response.capabilities.richCards,
-          supportsCarousels: response.capabilities.carousels,
-          supportsSuggestions: response.capabilities.suggestions,
-          supportsFileTransfer: response.capabilities.fileTransfer,
-          supportedMediaTypes: response.capabilities.supportedMediaTypes,
-          maxMessageLength: response.capabilities.maxMessageLength,
-          maxSuggestions: response.capabilities.maxSuggestions,
-          maxFileSize: response.capabilities.maxFileSize
-        };
+      if (response.features) {
+        // Rich card capabilities
+        if (response.features.richCards) features.push('RICHCARD_STANDALONE');
+        if (response.features.carousels) features.push('RICHCARD_CAROUSEL');
+        
+        // Action capabilities
+        if (response.features.suggestions) {
+          features.push('ACTION_DIAL');
+          features.push('ACTION_OPEN_URL');
+          features.push('ACTION_OPEN_URL_IN_WEBVIEW');
+          features.push('ACTION_SHARE_LOCATION');
+          features.push('ACTION_VIEW_LOCATION');
+          features.push('ACTION_CREATE_CALENDAR_EVENT');
+          
+          // Note: ACTION_COMPOSE is being deprecated by June 2025
+          // Only add if explicitly supported by the provider
+          if (response.features.supportedMediaTypes?.includes('compose')) {
+            features.push('ACTION_COMPOSE');
+          }
+        }
       }
       
-      return result;
+      return {
+        success: true,
+        capability: {
+          phoneNumber: formattedNumber,
+          isCapable: response.isRcsSupported,
+          features: features,
+          timestamp: new Date().toISOString()
+        }
+      };
     } catch (error) {
       logger.error('Failed to validate phone number via Longears RCS:', error);
       
@@ -220,12 +223,10 @@ export class LongearsRCSProvider extends BaseProvider {
         throw error;
       }
       
-      throw new RCSError(
-        'Failed to validate phone number via Longears RCS',
-        RCSErrorCode.VALIDATION_FAILED,
-        this.name,
-        error
-      );
+      return {
+        success: false,
+        error: `Failed to validate phone number: ${error instanceof Error ? error.message : String(error)}`
+      };
     }
   }
   

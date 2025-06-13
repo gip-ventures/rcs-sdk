@@ -84,27 +84,25 @@ export class RCSClient {
 
 
   /**
-   * Validate a phone number and optionally check RCS support
+   * Check if a phone number is capable of receiving RCS messages
    */
   async validatePhoneNumber(phoneNumber: string): Promise<ValidationResult> {
     this.ensureInitialized();
 
     try {
-      logger.debug('Validating phone number:', phoneNumber);
+      logger.debug('Checking RCS capability for phone number:', phoneNumber);
       return await this.provider.validatePhoneNumber(phoneNumber);
     } catch (error) {
-      logger.error('Failed to validate phone number:', error);
+      logger.error('Failed to check RCS capability:', error);
       
       if (error instanceof RCSError) {
         throw error;
       }
       
-      throw new RCSError(
-        'Failed to validate phone number',
-        RCSErrorCode.VALIDATION_FAILED,
-        this.config.provider,
-        error
-      );
+      return {
+        success: false,
+        error: `Failed to check RCS capability: ${error instanceof Error ? error.message : String(error)}`
+      };
     }
   }
 

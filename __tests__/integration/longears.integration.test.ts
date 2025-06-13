@@ -98,17 +98,27 @@ describe('Longears Integration Tests', () => {
   });
   
   
-  it('should validate phone number', async () => {
+  it('should check RCS capabilities for a phone number', async () => {
     // Mock the API calls
     mockAxiosInstance.request.mockImplementation((config: any) => {
       if (config.url.includes('/status')) {
         return Promise.resolve({ data: { status: 'ok' } });
       }
-      if (config.url.includes('/validate')) {
+      if (config.url.includes('/capabilities')) {
         return Promise.resolve({
           data: {
-            valid: true,
-            formatted: '+12345678901',
+            phoneNumber: '+12345678901',
+            isRcsSupported: true,
+            features: {
+              richCards: true,
+              carousels: true,
+              suggestions: true,
+              fileTransfer: true,
+              supportedMediaTypes: ['image/jpeg', 'image/png'],
+              maxMessageLength: 1000,
+              maxSuggestions: 4,
+              maxFileSize: 1048576
+            },
             countryCode: 'US',
             carrier: 'Test Carrier'
           }
@@ -133,11 +143,14 @@ describe('Longears Integration Tests', () => {
     
     await client.initialize();
     
-    const validation = await client.validatePhoneNumber('+12345678901');
+    const result = await client.validatePhoneNumber('+12345678901');
     
-    expect(validation.valid).toBe(true);
-    expect(validation.formatted).toBe('+12345678901');
-    expect(validation.countryCode).toBe('US');
-    expect(mockAxiosInstance.request).toHaveBeenCalledTimes(2); // status + validate
+    expect(result.success).toBe(true);
+    expect(result.capability).toBeDefined();
+    expect(result.capability?.phoneNumber).toBe('+12345678901');
+    expect(result.capability?.isCapable).toBe(true);
+    expect(Array.isArray(result.capability?.features)).toBe(true);
+    expect(result.capability?.features.length).toBeGreaterThan(0);
+    expect(mockAxiosInstance.request).toHaveBeenCalledTimes(2); // status + capabilities
   });
 });

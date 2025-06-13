@@ -67,12 +67,14 @@ export interface MessageResponse {
 }
 
 export interface ValidationResult {
-  valid: boolean;
-  formatted?: string;
-  capabilities?: RCSCapabilities;
+  success: boolean;
+  capability?: {
+    phoneNumber: string;
+    isCapable: boolean;
+    features: string[];
+    timestamp: string;
+  };
   error?: string;
-  countryCode?: string;
-  carrier?: string;
 }
 
 export interface MessageMetadata {
