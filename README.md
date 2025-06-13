@@ -73,9 +73,13 @@ npm install @longears-mobile/rcs-sdk
 
 The SDK is available in multiple formats:
 
-- **ES Modules** - `import { RCSClient } from '@longears-mobile/rcs-sdk';`
-- **CommonJS** - `const { RCSClient } = require('@longears-mobile/rcs-sdk');`
+- **ES Modules** - `import { RCSClient } from '@longears-mobile/rcs-sdk';` (primary format)
+- **CommonJS** - `const { RCSClient } = require('@longears-mobile/rcs-sdk');` (compatibility)
 - **UMD** - Available via CDN or direct script tag: `<script src="https://unpkg.com/@longears-mobile/rcs-sdk"></script>`
+
+### Requirements
+
+- **Node.js**: v24.0.0 or higher
 
 ## Development
 
@@ -84,6 +88,7 @@ See the `docs/` directory for:
 - [API Reference](./docs/API.md)
 - [Migration Guide](./docs/MIGRATION.md)
 - [Publishing Guide](./docs/PUBLISHING.md)
+- [Roadmap](./docs/ROADMAP.md)
 
 ## Extending with New Providers
 
