@@ -3,7 +3,9 @@ export interface RCSProvider {
   name: string;
   initialize(config: ProviderConfig): Promise<void>;
   sendMessage(message: RCSMessage): Promise<MessageResponse>;
-  validatePhoneNumber(phoneNumber: string): Promise<ValidationResult>;
+  validatePhoneNumber(phoneNumber: string, options?: {
+    agentId?: string;
+  }): Promise<ValidationResult>;
 }
 
 export interface RCSMessage {

@@ -19,6 +19,7 @@ export interface SDKOptions {
   webhookUrl?: string;
   userAgent?: string;
   debug?: boolean;
+  agentId?: string; // For Google RCS Business Messaging
 }
 
 export interface LongearsAuthCredentials {

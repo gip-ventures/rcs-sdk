@@ -153,4 +153,56 @@ describe('Longears Integration Tests', () => {
     expect(result.capability?.features.length).toBeGreaterThan(0);
     expect(mockAxiosInstance.request).toHaveBeenCalledTimes(2); // status + capabilities
   });
+  
+  it('should check RCS capabilities with agentId', async () => {
+    const testAgentId = 'brand_test123_agent';
+    
+    // Spy on request to check URL parameters
+    const requestSpy = jest.fn((config: any) => {
+      if (config.url.includes('/status')) {
+        return Promise.resolve({ data: { status: 'ok' } });
+      }
+      if (config.url.includes('/capabilities')) {
+        // Verify agentId is in URL
+        expect(config.url).toContain(`agentId=${testAgentId}`);
+        return Promise.resolve({
+          data: {
+            phoneNumber: '+12345678901',
+            isRcsSupported: true,
+            features: {
+              richCards: true,
+              carousels: true,
+              suggestions: true
+            }
+          }
+        });
+      }
+      return Promise.reject(new Error(`Unexpected URL: ${config.url}`));
+    });
+    
+    mockAxiosInstance.request.mockImplementation(requestSpy);
+    
+    const client = new RCSClient({
+      provider: 'longears',
+      auth: {
+        type: 'longears',
+        credentials: {
+          apiKey: 'test-api-key',
+          apiSecret: 'test-api-secret'
+        }
+      },
+      options: {
+        apiEndpoint: 'https://api.test.longears.mobi/v1'
+      }
+    });
+    
+    await client.initialize();
+    
+    // Call with agentId parameter
+    await client.validatePhoneNumber('+12345678901', { agentId: testAgentId });
+    
+    // Verify agentId check was done
+    expect(requestSpy).toHaveBeenCalled();
+    expect(mockAxiosInstance.request).toHaveBeenCalledTimes(2); // status + capabilities
+  });
 });

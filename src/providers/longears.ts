@@ -152,9 +152,14 @@ export class LongearsRCSProvider extends BaseProvider {
   
   
   /**
-   * Validate a phone number
+   * Check if a phone number is capable of receiving RCS messages
+   * @param phoneNumber The phone number to check in E.164 format
+   * @param options Optional parameters including agentId
    */
-  async validatePhoneNumber(phoneNumber: string): Promise<ValidationResult> {
+  async validatePhoneNumber(
+    phoneNumber: string, 
+    options?: { agentId?: string }
+  ): Promise<ValidationResult> {
     if (!this.initialized) {
       throw new RCSError(
         'Provider not initialized. Call initialize() first.',
@@ -164,14 +169,26 @@ export class LongearsRCSProvider extends BaseProvider {
     }
     
     try {
-      logger.debug('Validating phone number via Longears RCS', { phoneNumber });
+      const agentId = options?.agentId;
+      logger.debug('Checking capabilities via Longears RCS', { 
+        phoneNumber,
+        ...(agentId ? { agentId } : {})
+      });
       
       // Try to format the number first
       const formattedNumber = formatPhoneNumber(phoneNumber) || phoneNumber;
       
+      // Build the request URL with query parameters
+      let requestUrl = `${this.apiEndpoint}/capabilities?phoneNumber=${encodeURIComponent(formattedNumber)}`;
+      
+      // Add agentId if provided
+      if (agentId) {
+        requestUrl += `&agentId=${encodeURIComponent(agentId)}`;
+      }
+      
       // Get capabilities for this phone number
       const response = await this.makeRequest<LongearsCapabilitiesResponse>(
-        `${this.apiEndpoint}/capabilities?phoneNumber=${encodeURIComponent(formattedNumber)}`,
+        requestUrl,
         {
           method: 'GET'
         }
@@ -217,7 +234,7 @@ export class LongearsRCSProvider extends BaseProvider {
         }
       };
     } catch (error) {
-      logger.error('Failed to validate phone number via Longears RCS:', error);
+      logger.error('Failed to check capabilities via Longears RCS:', error);
       
       if (error instanceof RCSError) {
         throw error;
@@ -225,7 +242,7 @@ export class LongearsRCSProvider extends BaseProvider {
       
       return {
         success: false,
-        error: `Failed to validate phone number: ${error instanceof Error ? error.message : String(error)}`
+        error: `Failed to check RCS capabilities: ${error instanceof Error ? error.message : String(error)}`
       };
     }
   }

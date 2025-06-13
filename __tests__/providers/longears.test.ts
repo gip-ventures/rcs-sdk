@@ -185,6 +185,39 @@ describe('LongearsRCSProvider', () => {
       { method: 'GET' }
     );
   });
+  
+  it('should include agentId in capabilities request when provided', async () => {
+    const provider = new LongearsRCSProvider(mockAuth as any, defaultConfig);
+    (provider as any).initialized = true;
+    
+    const capabilitiesResponse = {
+      phoneNumber: '+12345678901',
+      isRcsSupported: true,
+      features: {
+        richCards: true,
+        carousels: true,
+        suggestions: true,
+        fileTransfer: true,
+        supportedMediaTypes: ['image/jpeg', 'image/png'],
+        maxMessageLength: 1000,
+        maxSuggestions: 4,
+        maxFileSize: 1048576
+      }
+    };
+    
+    // Mock successful capabilities request
+    (provider as any).makeRequest = jest.fn().mockResolvedValue(capabilitiesResponse);
+    
+    // Call with agentId in options
+    const testAgentId = 'brand_test123_agent';
+    await provider.validatePhoneNumber('+12345678901', { agentId: testAgentId });
+    
+    // Verify agentId was included in the request URL
+    expect((provider as any).makeRequest).toHaveBeenCalledWith(
+      `${defaultConfig.apiEndpoint}/capabilities?phoneNumber=%2B12345678901&agentId=${testAgentId}`,
+      { method: 'GET' }
+    );
+  });
 
   it('should transform messages correctly', () => {
     const provider = new LongearsRCSProvider(mockAuth as any, defaultConfig);

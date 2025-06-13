@@ -85,13 +85,23 @@ export class RCSClient {
 
   /**
    * Check if a phone number is capable of receiving RCS messages
+   * @param phoneNumber The phone number to check in E.164 format
+   * @param options Optional parameters including agentId for Google RBM
    */
-  async validatePhoneNumber(phoneNumber: string): Promise<ValidationResult> {
+  async validatePhoneNumber(
+    phoneNumber: string, 
+    options?: { agentId?: string }
+  ): Promise<ValidationResult> {
     this.ensureInitialized();
 
     try {
-      logger.debug('Checking RCS capability for phone number:', phoneNumber);
-      return await this.provider.validatePhoneNumber(phoneNumber);
+      // Use either provided agentId or the one from config
+      const agentId = options?.agentId || this.config.options?.agentId;
+      
+      logger.debug('Checking RCS capability for phone number:', phoneNumber, 
+                  agentId ? { agentId } : {});
+      
+      return await this.provider.validatePhoneNumber(phoneNumber, { agentId });
     } catch (error) {
       logger.error('Failed to check RCS capability:', error);
       
