@@ -78,9 +78,6 @@ describe('LongearsRCSProvider', () => {
       code: RCSErrorCode.NOT_INITIALIZED
     }));
     
-    await expect(provider.getCapabilities('+12345678901')).rejects.toThrow(expect.objectContaining({
-      code: RCSErrorCode.NOT_INITIALIZED
-    }));
     
     await expect(provider.validatePhoneNumber('+12345678901')).rejects.toThrow(expect.objectContaining({
       code: RCSErrorCode.NOT_INITIALIZED
@@ -142,51 +139,8 @@ describe('LongearsRCSProvider', () => {
       code: RCSErrorCode.INVALID_PHONE_NUMBER
     }));
     
-    await expect(provider.getCapabilities('invalid-number')).rejects.toThrow(expect.objectContaining({
-      code: RCSErrorCode.INVALID_PHONE_NUMBER
-    }));
   });
 
-  it('should get capabilities successfully', async () => {
-    const provider = new LongearsRCSProvider(mockAuth as any, defaultConfig);
-    (provider as any).initialized = true;
-    
-    const capabilitiesResponse = {
-      phoneNumber: '+12345678901',
-      isRcsSupported: true,
-      features: {
-        richCards: true,
-        carousels: true,
-        suggestions: true,
-        fileTransfer: true,
-        supportedMediaTypes: ['image/jpeg', 'image/png'],
-        maxMessageLength: 1000,
-        maxSuggestions: 4,
-        maxFileSize: 1048576
-      },
-      carrier: 'Test Carrier',
-      countryCode: 'US'
-    };
-    
-    // Mock successful capabilities request
-    (provider as any).makeRequest = jest.fn().mockResolvedValue(capabilitiesResponse);
-    
-    const capabilities = await provider.getCapabilities('+12345678901');
-    
-    expect(capabilities.supportsRichCards).toBe(true);
-    expect(capabilities.supportsCarousels).toBe(true);
-    expect(capabilities.supportsSuggestions).toBe(true);
-    expect(capabilities.supportsFileTransfer).toBe(true);
-    expect(capabilities.supportedMediaTypes).toEqual(['image/jpeg', 'image/png']);
-    expect(capabilities.maxMessageLength).toBe(1000);
-    expect(capabilities.maxSuggestions).toBe(4);
-    expect(capabilities.maxFileSize).toBe(1048576);
-    
-    expect((provider as any).makeRequest).toHaveBeenCalledWith(
-      `${defaultConfig.apiEndpoint}/capabilities?phoneNumber=%2B12345678901`,
-      { method: 'GET' }
-    );
-  });
 
   it('should validate phone number successfully', async () => {
     const provider = new LongearsRCSProvider(mockAuth as any, defaultConfig);

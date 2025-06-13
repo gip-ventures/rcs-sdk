@@ -2,11 +2,10 @@ import { BaseProvider } from './base.js';
 import { 
   RCSMessage, 
   MessageResponse, 
-  RCSCapabilities, 
   ValidationResult, 
   ProviderConfig,
   StandaloneCard,
-  CarouselCard
+  CarouselCard,
 } from '../interfaces/index.js';
 import { AuthProvider } from '../interfaces/auth.js';
 import { RCSError, RCSErrorCode } from '../utils/errors.js';
@@ -158,67 +157,6 @@ export class LongearsRCSProvider extends BaseProvider {
     }
   }
   
-  /**
-   * Get RCS capabilities for a phone number
-   */
-  async getCapabilities(phoneNumber: string): Promise<RCSCapabilities> {
-    if (!this.initialized) {
-      throw new RCSError(
-        'Provider not initialized. Call initialize() first.',
-        RCSErrorCode.NOT_INITIALIZED,
-        this.name
-      );
-    }
-    
-    // Validate phone number
-    if (!isValidE164(phoneNumber)) {
-      throw new RCSError(
-        'Invalid phone number format. Must be in E.164 format.',
-        RCSErrorCode.INVALID_PHONE_NUMBER,
-        this.name,
-        { phoneNumber }
-      );
-    }
-    
-    try {
-      logger.debug('Getting capabilities via Longears RCS', { phoneNumber });
-      
-      // Get capabilities
-      const response = await this.makeRequest<LongearsCapabilitiesResponse>(
-        `${this.apiEndpoint}/capabilities?phoneNumber=${encodeURIComponent(phoneNumber)}`,
-        {
-          method: 'GET'
-        }
-      );
-      
-      logger.debug('Got capabilities from Longears RCS', { phoneNumber, isRcsSupported: response.isRcsSupported });
-      
-      // Transform and return the response
-      return {
-        supportsRichCards: response.features.richCards,
-        supportsCarousels: response.features.carousels,
-        supportsSuggestions: response.features.suggestions,
-        supportsFileTransfer: response.features.fileTransfer,
-        supportedMediaTypes: response.features.supportedMediaTypes,
-        maxMessageLength: response.features.maxMessageLength,
-        maxSuggestions: response.features.maxSuggestions,
-        maxFileSize: response.features.maxFileSize
-      };
-    } catch (error) {
-      logger.error('Failed to get capabilities via Longears RCS:', error);
-      
-      if (error instanceof RCSError) {
-        throw error;
-      }
-      
-      throw new RCSError(
-        'Failed to get capabilities via Longears RCS',
-        RCSErrorCode.CAPABILITY_CHECK_FAILED,
-        this.name,
-        error
-      );
-    }
-  }
   
   /**
    * Validate a phone number

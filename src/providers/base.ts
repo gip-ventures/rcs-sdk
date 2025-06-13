@@ -1,4 +1,4 @@
-import { RCSProvider, RCSMessage, MessageResponse, RCSCapabilities, ValidationResult, ProviderConfig } from '../interfaces/index.js';
+import { RCSProvider, RCSMessage, MessageResponse, ValidationResult, ProviderConfig } from '../interfaces/index.js';
 import { AuthProvider } from '../interfaces/auth.js';
 import { RCSError, RCSErrorCode } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
@@ -116,7 +116,6 @@ export abstract class BaseProvider implements RCSProvider {
   
   abstract initialize(config: ProviderConfig): Promise<void>;
   abstract sendMessage(message: RCSMessage): Promise<MessageResponse>;
-  abstract getCapabilities(phoneNumber: string): Promise<RCSCapabilities>;
   abstract validatePhoneNumber(phoneNumber: string): Promise<ValidationResult>;
   
   /**

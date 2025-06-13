@@ -97,55 +97,6 @@ describe('Longears Integration Tests', () => {
     expect(mockAxiosInstance.request).toHaveBeenCalledTimes(2); // status + message
   });
   
-  it('should check capabilities', async () => {
-    // Mock the API calls
-    mockAxiosInstance.request.mockImplementation((config: any) => {
-      if (config.url.includes('/status')) {
-        return Promise.resolve({ data: { status: 'ok' } });
-      }
-      if (config.url.includes('/capabilities')) {
-        return Promise.resolve({
-          data: {
-            phoneNumber: '+12345678901',
-            isRcsSupported: true,
-            features: {
-              richCards: true,
-              carousels: true,
-              suggestions: true,
-              fileTransfer: true,
-              supportedMediaTypes: ['image/jpeg', 'image/png'],
-              maxMessageLength: 1000,
-              maxSuggestions: 4,
-              maxFileSize: 1048576
-            }
-          }
-        });
-      }
-      return Promise.reject(new Error(`Unexpected URL: ${config.url}`));
-    });
-    
-    const client = new RCSClient({
-      provider: 'longears',
-      auth: {
-        type: 'longears',
-        credentials: {
-          apiKey: 'test-api-key',
-          apiSecret: 'test-api-secret'
-        }
-      },
-      options: {
-        apiEndpoint: 'https://api.test.longears.mobi/v1'
-      }
-    });
-    
-    await client.initialize();
-    
-    const capabilities = await client.getCapabilities('+12345678901');
-    
-    expect(capabilities.supportsRichCards).toBe(true);
-    expect(capabilities.supportsCarousels).toBe(true);
-    expect(mockAxiosInstance.request).toHaveBeenCalledTimes(2); // status + capabilities
-  });
   
   it('should validate phone number', async () => {
     // Mock the API calls

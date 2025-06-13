@@ -1,4 +1,4 @@
-import { RCSProvider, SendMessageOptions, MessageResponse, RCSCapabilities, ValidationResult } from './interfaces/index.js';
+import { RCSProvider, SendMessageOptions, MessageResponse, ValidationResult } from './interfaces/index.js';
 import { SDKConfig } from './interfaces/config.js';
 import { AuthProvider } from './interfaces/auth.js';
 import { createProvider } from './providers/factory.js';
@@ -82,30 +82,6 @@ export class RCSClient {
     }
   }
 
-  /**
-   * Get RCS capabilities for a phone number
-   */
-  async getCapabilities(phoneNumber: string): Promise<RCSCapabilities> {
-    this.ensureInitialized();
-
-    try {
-      logger.debug('Getting capabilities for:', phoneNumber);
-      return await this.provider.getCapabilities(phoneNumber);
-    } catch (error) {
-      logger.error('Failed to get capabilities:', error);
-      
-      if (error instanceof RCSError) {
-        throw error;
-      }
-      
-      throw new RCSError(
-        'Failed to get capabilities',
-        RCSErrorCode.CAPABILITY_CHECK_FAILED,
-        this.config.provider,
-        error
-      );
-    }
-  }
 
   /**
    * Validate a phone number and optionally check RCS support
